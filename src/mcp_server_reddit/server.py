@@ -1,8 +1,18 @@
 from enum import Enum
 import json
 import redditwarp.SYNC
+import redditwarp.models.subreddit
 from fastmcp import FastMCP
 from pydantic import BaseModel
+
+# Monkey-patch redditwarp to handle missing 'active_user_count' field
+# (Reddit removed it from their API response, breaking redditwarp 1.3.0)
+_orig_subreddit_init = redditwarp.models.subreddit.Subreddit.__init__
+def _patched_subreddit_init(self, d, *args, **kwargs):
+    if isinstance(d, dict) and 'active_user_count' not in d:
+        d['active_user_count'] = None
+    _orig_subreddit_init(self, d, *args, **kwargs)
+redditwarp.models.subreddit.Subreddit.__init__ = _patched_subreddit_init
 
 
 class PostType(str, Enum):
