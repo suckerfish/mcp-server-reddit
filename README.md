@@ -1,115 +1,75 @@
-# MCP Server Reddit
-[![smithery badge](https://smithery.ai/badge/@Hawstein/mcp-server-reddit)](https://smithery.ai/server/@Hawstein/mcp-server-reddit)
+# MCP Server Reddit (Fork)
 
-A Model Context Protocol server providing access to Reddit public API for LLMs. This server enables LLMs to interact with Reddit's content, including browsing frontpage posts, accessing subreddit information, and reading post comments.
+A Model Context Protocol server providing access to Reddit's public API for LLMs. Forked from [Hawstein/mcp-server-reddit](https://github.com/Hawstein/mcp-server-reddit).
 
-This server uses [redditwarp](https://github.com/Pyprohly/redditwarp) to interact with Reddit's public API and exposes the functionality through MCP protocol.
+This server uses [redditwarp](https://github.com/Pyprohly/redditwarp) to interact with Reddit's public API and exposes the functionality through the MCP protocol.
 
-<a href="https://glama.ai/mcp/servers/4032xr14pu"><img width="380" height="200" src="https://glama.ai/mcp/servers/4032xr14pu/badge" alt="Server Reddit MCP server" /></a>
+## Fork Enhancements
 
-## Video Demo (Click to Watch)
+This fork adds the following over the original:
 
-A demo in Clinde 👇
-
-[![MCP Server Reddit - Clinde](https://img.youtube.com/vi/1Gdx1jWFbCM/maxresdefault.jpg)](https://youtu.be/1Gdx1jWFbCM)
-
+- **Streamable HTTP transport** — Supports `--transport streamable-http` in addition to stdio, allowing deployment as a standalone HTTP service instead of requiring a stdio process manager
+- **CLI flags** — `--transport`, `--host`, `--port` arguments for flexible deployment
+- **FastMCP v3** — Migrated from low-level `mcp.server.Server` to `FastMCP` decorator-based API
+- **Docker container** — Production-ready Dockerfile with multi-arch (amd64/arm64) support
+- **GHCR publishing** — GitHub Actions workflow auto-builds and pushes to `ghcr.io/suckerfish/mcp-server-reddit:latest` on every push to main
+- **redditwarp fix** — Monkey-patches the `active_user_count` KeyError crash in redditwarp 1.3.0 caused by Reddit removing the field from their API
 
 ## Available Tools
 
 - `get_frontpage_posts` - Get hot posts from Reddit frontpage
-  - Optional arguments:
-    - `limit` (integer): Number of posts to return (default: 10, range: 1-100)
+  - Optional: `limit` (integer, default: 10, range: 1-100)
 
 - `get_subreddit_info` - Get information about a subreddit
-  - Required arguments:
-    - `subreddit_name` (string): Name of the subreddit (e.g. 'Python', 'news')
+  - Required: `subreddit_name` (string)
 
 - `get_subreddit_hot_posts` - Get hot posts from a specific subreddit
-  - Required arguments:
-    - `subreddit_name` (string): Name of the subreddit (e.g. 'Python', 'news')
-  - Optional arguments:
-    - `limit` (integer): Number of posts to return (default: 10, range: 1-100)
+  - Required: `subreddit_name` (string)
+  - Optional: `limit` (integer, default: 10, range: 1-100)
 
 - `get_subreddit_new_posts` - Get new posts from a specific subreddit
-  - Required arguments:
-    - `subreddit_name` (string): Name of the subreddit (e.g. 'Python', 'news')
-  - Optional arguments:
-    - `limit` (integer): Number of posts to return (default: 10, range: 1-100)
+  - Required: `subreddit_name` (string)
+  - Optional: `limit` (integer, default: 10, range: 1-100)
 
 - `get_subreddit_top_posts` - Get top posts from a specific subreddit
-  - Required arguments:
-    - `subreddit_name` (string): Name of the subreddit (e.g. 'Python', 'news')
-  - Optional arguments:
-    - `limit` (integer): Number of posts to return (default: 10, range: 1-100)
-    - `time` (string): Time filter for top posts (default: '', options: 'hour', 'day', 'week', 'month', 'year', 'all')
+  - Required: `subreddit_name` (string)
+  - Optional: `limit` (integer, default: 10, range: 1-100), `time` (string: hour, day, week, month, year, all)
 
 - `get_subreddit_rising_posts` - Get rising posts from a specific subreddit
-  - Required arguments:
-    - `subreddit_name` (string): Name of the subreddit (e.g. 'Python', 'news')
-  - Optional arguments:
-    - `limit` (integer): Number of posts to return (default: 10, range: 1-100)
+  - Required: `subreddit_name` (string)
+  - Optional: `limit` (integer, default: 10, range: 1-100)
 
-- `get_post_content` - Get detailed content of a specific post
-  - Required arguments:
-    - `post_id` (string): ID of the post
-  - Optional arguments:
-    - `comment_limit` (integer): Number of top-level comments to return (default: 10, range: 1-100)
-    - `comment_depth` (integer): Maximum depth of comment tree (default: 3, range: 1-10)
+- `get_post_content` - Get detailed content of a specific post including comments
+  - Required: `post_id` (string)
+  - Optional: `comment_limit` (integer, default: 10), `comment_depth` (integer, default: 3)
 
 - `get_post_comments` - Get comments from a post
-  - Required arguments:
-    - `post_id` (string): ID of the post
-  - Optional arguments:
-    - `limit` (integer): Number of comments to return (default: 10, range: 1-100)
+  - Required: `post_id` (string)
+  - Optional: `limit` (integer, default: 10, range: 1-100)
 
+## Usage
 
-## Installation
-
-### Using [Clinde](https://clinde.ai/) (recommended)
-
-The easiest way to use MCP Server Reddit is through the Clinde desktop app. Simply download and install Clinde, then:
-
-1. Open the Clinde app
-2. Navigate to the Servers page
-3. Find mcp-server-reddit and click Install
-
-That's it! No technical knowledge required - Clinde handles all the installation and configuration for you seamlessly.
-
-### Using uv (recommended)
-
-When using [`uv`](https://docs.astral.sh/uv/) no specific installation is needed. We will
-use [`uvx`](https://docs.astral.sh/uv/guides/tools/) to directly run *mcp-server-reddit*.
-
-### Using PIP
-
-Alternatively you can install `mcp-server-reddit` via pip:
+### Docker (recommended for deployment)
 
 ```bash
-pip install mcp-server-reddit
+docker run -p 8080:8080 ghcr.io/suckerfish/mcp-server-reddit:latest
 ```
 
-After installation, you can run it as a script using:
+The container runs streamable HTTP transport on port 8080 by default. MCP endpoint is at `/mcp`.
+
+### Streamable HTTP (standalone)
 
 ```bash
-python -m mcp_server_reddit
+uv run mcp-server-reddit --transport streamable-http --host 0.0.0.0 --port 8080
 ```
 
-### Installing via Smithery
-
-To install MCP Server Reddit for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@Hawstein/mcp-server-reddit):
+### Stdio (original behavior)
 
 ```bash
-npx -y @smithery/cli install @Hawstein/mcp-server-reddit --client claude
+uv run mcp-server-reddit
 ```
 
-## Configuration
-
-### Configure for Claude.app
-
-Add to your Claude settings:
-
-<details>
-<summary>Using uvx</summary>
+Or in your MCP client config:
 
 ```json
 "mcpServers": {
@@ -118,78 +78,8 @@ Add to your Claude settings:
     "args": ["mcp-server-reddit"]
   }
 }
-```
-</details>
-
-<details>
-<summary>Using pip installation</summary>
-
-```json
-"mcpServers": {
-  "reddit": {
-    "command": "python",
-    "args": ["-m", "mcp_server_reddit"]
-  }
-}
-```
-</details>
-
-### Configure for Zed
-
-Add to your Zed settings.json:
-
-<details>
-<summary>Using uvx</summary>
-
-```json
-"context_servers": [
-  "mcp-server-reddit": {
-    "command": "uvx",
-    "args": ["mcp-server-reddit"]
-  }
-],
-```
-</details>
-
-<details>
-<summary>Using pip installation</summary>
-
-```json
-"context_servers": {
-  "mcp-server-reddit": {
-    "command": "python",
-    "args": ["-m", "mcp_server_reddit"]
-  }
-},
-```
-</details>
-
-## Examples of Questions
-
-- "What are the current hot posts on Reddit's frontpage?" (get_frontpage_posts)
-- "Tell me about the r/ClaudeAI subreddit" (get_subreddit_info)
-- "What are the hot posts in the r/ClaudeAI subreddit?" (get_subreddit_hot_posts)
-- "Show me the newest posts from r/ClaudeAI" (get_subreddit_new_posts)
-- "What are the top posts of all time in r/ClaudeAI?" (get_subreddit_top_posts)
-- "What posts are trending in r/ClaudeAI right now?" (get_subreddit_rising_posts)
-- "Get the full content and comments of this Reddit post: [post_url]" (get_post_content)
-- "Summarize the comments on this Reddit post: [post_url]" (get_post_comments)
-
-## Debugging
-
-You can use the MCP inspector to debug the server. For uvx installations:
-
-```bash
-npx @modelcontextprotocol/inspector uvx mcp-server-reddit
-```
-
-Or if you've installed the package in a specific directory or are developing on it:
-
-```bash
-cd path/to/mcp_server_reddit
-npx @modelcontextprotocol/inspector uv run mcp-server-reddit
 ```
 
 ## License
 
-mcp-server-reddit is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
+MIT License. See the LICENSE file for details.
